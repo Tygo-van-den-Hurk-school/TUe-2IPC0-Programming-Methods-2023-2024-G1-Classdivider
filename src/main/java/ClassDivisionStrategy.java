@@ -1,3 +1,5 @@
+import java.util.List;
+
 /**
  * Enumeration of class division strategies.
  * 
@@ -8,7 +10,11 @@ public enum ClassDivisionStrategy {
     /** Divide a class randomly.*/
     Random("Random"), 
     /** Divide a class based on lastName. */
-    LastName("Lastname");
+    LastName("Lastname"), 
+    /** Divide a class based on gender. */
+    Genders("Genders"), 
+    /** Divide a class based on their nationality. */
+    DutchAndInternationals("DutchAndInternationals");
 
     /** Stores the key used for the enum. */
     private final String key;
@@ -56,7 +62,13 @@ public enum ClassDivisionStrategy {
      */
     public static ClassDivider create(final ClassDivisionStrategy strategy) {
         return switch (strategy) {
-            
+            case Genders -> new BucketClassDivider<Gender>(
+                List.of(Gender.values()), 
+                Student::gender);
+            case DutchAndInternationals -> new BucketClassDivider<Boolean>(
+                List.of(true, false), 
+                Student::isDutch);
+            case LastName -> new LastNameClassDivider();
             case Random -> new RandomClassDivider();
             default -> new RandomClassDivider();
         };
