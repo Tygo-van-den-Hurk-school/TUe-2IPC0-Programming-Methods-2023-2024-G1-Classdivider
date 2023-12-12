@@ -26,21 +26,35 @@ public class ClassDivider {
      *
      * @pre {@code groupSize > 0 && deviation >= 0 && klas != null && !klas.isEmpty()}
      *
-     * @post {@code \result ==
-     * noEmptyGroupsPossible && (potential >= overflow || overflow + potential
-     * >= minimalGroupSize)}<br>
+     * @post {@code \result == (klas != null) 
+     *  && noEmptyGroupsPossible 
+     *  && ((potential >= overflow)
+     *      || (overflow + potential >= minimalGroupSize))
+     * }<br>
      * where:<ul>
      * <li>{@code minimalGroupSize == groupSize - deviation}</li>
      * <li>{@code noEmptyGroupsPossible == minimalGroupSize > 0}</li>
      * <li>{@code overflow == klas.size() % groupSize}</li>
      * <li>{@code potential == deviation * (klas.size() / groupSize)}</li>
      * </ul>
+     * 
+     * @throws NullPointerException when {@code klas == null}
      */
     public boolean isDividable(
         final Group<Student> klas, 
         final int groupSize, 
         final int deviation
-    ) {
+    ) throws NullPointerException {
+
+        /* Checking pre conditions */ {
+            if (klas == null) {
+                throw new NullPointerException(
+                    this.getClass().getSimpleName() + ".isDividable(Group<Student>, int, int).pre "
+                    + "violated, klas was null, klas is not allowed to be null."
+                );
+            }
+        }
+
 
         final int minimalGroupSize = (groupSize - deviation);
 
@@ -81,12 +95,25 @@ public class ClassDivider {
      * </li>
      * <li>The class of students isn't changed: {@code klas == \old(klas)}</li>
      * </ul>
+     * 
+     * @throws IllegalArgumentException when {@code !isDividable(klas, groupSize, deviation)}
      */
     public Set<Group<Student>> divide(
         final Group<Student> klas, 
         final int groupSize, 
         final int deviation
-    ) {
+    ) throws IllegalArgumentException {
+
+        /* Checking pre conditions */ {
+            if (! this.isDividable(klas, groupSize, deviation)) {
+                throw new IllegalArgumentException(
+                    this.getClass().getSimpleName() + ".divide(Group<Student>, int, int).pre "
+                    + "violated, "
+                    + "klas (of size " + klas.size() + ") was not dividable into groups of size "
+                    + "groupSize (" + groupSize + ") +/- deviation (" + deviation + ")."
+                );
+            }
+        }
 
         final Set<Group<Student>> groupSet = (new HashSet<>());
         final Iterator<Student> students = (klas.iterator());
