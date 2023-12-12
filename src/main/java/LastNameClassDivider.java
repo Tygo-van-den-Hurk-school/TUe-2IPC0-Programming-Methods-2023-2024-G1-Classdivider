@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -52,5 +56,57 @@ public class LastNameClassDivider extends ClassDivider {
         final int groupSize, 
         final int deviation
     ) throws IllegalArgumentException {
+         
+        /* Pre-Conditions Guard-Statements */ {
+            if (klas == null) {
+                throw new IllegalArgumentException(
+                    this.getClass().getSimpleName() + ".divide(Group<Student>, int, int).pre " 
+                    + "violated, "
+                    + "klas cannot be null."
+                );
+            }
+
+            if (! this.isDividable(klas, groupSize, deviation)) {
+                throw new IllegalArgumentException(
+                    this.getClass().getSimpleName() + ".divide(Group<Student>, int, int).pre " 
+                    + "violated, "
+                    + "the klas with current settings is not dividable."
+                    + "yet " + this.getClass().getSimpleName()
+                    + "divide(Group<Student>, int, int) was called."
+                );
+            }
+        }
+
+        final List<Student> sortedStudents;
+        /* Getting a sorted Array of the students in klass */ {
+            
+            final ArrayList<Student> studentsArrayList = new ArrayList<Student>();
+            for (Student student : klas) {
+                studentsArrayList.add(student);
+            }
+
+            Collections.sort(
+                studentsArrayList, 
+                (student1, student2) -> student1.sortName().compareTo(student2.sortName())
+            );
+
+            sortedStudents = studentsArrayList;
+        }
+
+        final Set<Group<Student>> createdGroups;
+        /* Getting the groups the students will fall into */ {
+            createdGroups = (new HashSet<Group<Student>>());
+            List<Integer> groupSizes = (this.determineGroupsAndSizes(klas, groupSize, deviation));
+            for (Integer size : groupSizes) {
+                final Group<Student> group = (new Group<Student>());
+                while (group.size() < size) {
+                    final Student student = (sortedStudents.remove(0));
+                    group.add(student);
+                }
+                createdGroups.add(group);
+            }
+        }
+
+        return createdGroups;
     }
 }
