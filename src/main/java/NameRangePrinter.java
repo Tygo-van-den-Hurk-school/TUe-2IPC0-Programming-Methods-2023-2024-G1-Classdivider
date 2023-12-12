@@ -68,11 +68,11 @@ public class NameRangePrinter implements GroupSetPrinter {
 
             final int firstStudentInList = (0); // explanation for a constant
             final Student firstStudent = sortedStudents.get(firstStudentInList);
-            nameOfFirstStudent = firstStudent.sortName();
+            nameOfFirstStudent = firstStudent.lastName();
 
             final int lastStudentInList = (sortedStudents.size() - 1);
             final Student lastStudent = (sortedStudents.get(lastStudentInList));
-            nameOfLastStudent = lastStudent.sortName();
+            nameOfLastStudent = lastStudent.lastName();
         }
 
         final String result;
