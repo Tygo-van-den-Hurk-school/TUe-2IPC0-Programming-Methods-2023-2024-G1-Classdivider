@@ -12,13 +12,13 @@ import picocli.CommandLine.Spec;
 /**
  * ClassDivider–Divide a class of students into groups.
  *
- * @version 0.7
+ * @version 0.8
  * @author Huub de Beer
  */
 @Command(
     name = "classdivider",
     mixinStandardHelpOptions = true,
-    version = "classdivider 0.7",
+    version = "classdivider 0.8",
     description = "Divide a class of students into groups.")
 public class ClassDividerCLI implements Callable<Integer> {
 
