@@ -56,7 +56,7 @@ public enum ClassDivisionStrategy {
      */
     public static ClassDivider create(final ClassDivisionStrategy strategy) {
         return switch (strategy) {
-            case LastName -> new LastNameClassDivider();
+            
             case Random -> new RandomClassDivider();
             default -> new RandomClassDivider();
         };
