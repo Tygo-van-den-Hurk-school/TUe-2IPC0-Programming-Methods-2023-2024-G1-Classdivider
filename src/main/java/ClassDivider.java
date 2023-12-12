@@ -1,0 +1,198 @@
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Class divider to randomly divide a class of students into groups.
+ *
+ * @author Huub de Beer
+ */
+public class ClassDivider {
+
+    /**
+     * Determine if {@code klas} is dividable into groups of size {@code groupSize} +/-
+     * {@code deviation}.
+     *
+     * @param klas class of students
+     * @param groupSize target group size
+     * @param deviation allowed number of students more or less in a group
+     *
+     * @return true if this class is dividable into groups of {@code groupSize} +/-
+     * {@code deviation}, false otherwise. An empty class is not dividable.
+     *
+     * @pre {@code groupSize > 0 && deviation >= 0 && klas != null && !klas.isEmpty()}
+     *
+     * @post {@code \result ==
+     * noEmptyGroupsPossible && (potential >= overflow || overflow + potential
+     * >= minimalGroupSize)}<br>
+     * where:<ul>
+     * <li>{@code minimalGroupSize == groupSize - deviation}</li>
+     * <li>{@code noEmptyGroupsPossible == minimalGroupSize > 0}</li>
+     * <li>{@code overflow == klas.size() % groupSize}</li>
+     * <li>{@code potential == deviation * (klas.size() / groupSize)}</li>
+     * </ul>
+     */
+    public boolean isDividable(
+        final Group<Student> klas, 
+        final int groupSize, 
+        final int deviation
+    ) {
+
+        final int minimalGroupSize = (groupSize - deviation);
+
+        if (minimalGroupSize <= 0) {
+            return false;
+        }
+
+        final int overflow = (klas.size() % groupSize);
+        final int nrOfGroups = (klas.size() / groupSize);
+        final int potential = (deviation * nrOfGroups);
+
+        final boolean overflowCanBeSpreadOverGroups = (potential >= overflow);
+        final boolean overflowCanBeASeparateGroup = (overflow + potential >= minimalGroupSize);
+
+        return (overflowCanBeSpreadOverGroups || overflowCanBeASeparateGroup);
+    }
+
+    /**
+     * Divide {@code klas} into groups of size {@code groupSize} +/- {@code deviation}.
+     *
+     * @param klas class of students
+     * @param groupSize target group size
+     * @param deviation allowed number of students more or less in a group
+     *
+     * @return group set
+     *
+     * @pre {@code isDividable(klas, groupSize, deviation)}
+     *
+     * @post <ul>
+     * <li>All groups have the right size: {@code (\forall g; \result.contains(g);
+     *   between(g.size(), groupSize, deviation))}<br>
+     * where {@code between(n, b, d) == b - d <= n && n <= b + d}</li>
+     * <li>All students are in exactly one group:<br>
+     * {@code (\forall s; klas.contains(s); (\num_of g; \result.contains(g); g.contains(s)) == 1)}
+     * </li>
+     * <li>The number of students in all groups equals the number of students in the class:<br>
+     * {@code klas.size() == (\sum g; \result.contains(g); g.size)}
+     * </li>
+     * <li>The class of students isn't changed: {@code klas == \old(klas)}</li>
+     * </ul>
+     */
+    public Set<Group<Student>> divide(
+        final Group<Student> klas, 
+        final int groupSize, 
+        final int deviation
+    ) {
+
+        final Set<Group<Student>> groupSet = (new HashSet<>());
+        final Iterator<Student> students = (klas.iterator());
+        final List<Integer> groupSizes = (this.determineGroupsAndSizes(
+            klas, groupSize, deviation
+        ));
+
+        for (int size : groupSizes) {
+            final Group<Student> group = new Group<>();
+
+            for (int s = 0; s < size; s++) {
+                group.add(students.next());
+            }
+
+            groupSet.add(group);
+        }
+
+        return groupSet;
+    }
+
+    /**
+     * Determine the number of groups and their sizes when dividing {@code klas} into groups of
+     * {@code groupSize} +/- {@code deviations} students.
+     *
+     * @param klas class to divide
+     * @param groupSize target group size
+     * @param deviation allowed number of students more or less in a group
+     *
+     * @return list of group sizes; the size of this list is the number of groups.
+     *
+     * @pre {@code isDividable(klas, groupSize, deviation)}
+     *
+     * @post <ul>
+     * <li>{@code klas.size() / groupSize <= \result.size() <= klas.size() / groupSize + 1}</li>
+     * <li>{@code klas.size() == (\sum size; \result.contains(size); size)}</li>
+     * <li>{@code (\forall size; \result.contains(size);
+     *                  groupSize - deviation <= size <= groupSize + deviation)}</li>
+     * </ul>
+     */
+    protected List<Integer> determineGroupsAndSizes(
+        final Group<Student> klas,
+        final int groupSize,
+        final int deviation
+    ) {
+        final int overflow = klas.size() % groupSize;
+        final int nrOfGroups = klas.size() / groupSize;
+
+        final int potential = deviation * nrOfGroups;
+
+        final List<Integer> listOfSizes = (Collections.nCopies(nrOfGroups, groupSize));
+        final ArrayList<Integer> sizes = (new ArrayList<Integer>(listOfSizes));
+
+        if (overflow == 0) {
+            return sizes;
+        } else if (overflow > potential) {
+            return (this.addOverflowAsExtraGroup(deviation, overflow, sizes));
+        } else {
+            return (this.spreadOverflowOverGroups(deviation, overflow, sizes));
+        }
+    }
+
+    /** creates a new group from the overflow. */
+    private final List<Integer> addOverflowAsExtraGroup(
+            final int deviation, 
+            final int overflow, 
+            final ArrayList<Integer> sizes
+    ) {
+
+        int extraGroupSize = overflow;
+
+        // If sizes is empty, the overflow will be the single extra group.
+        if (!sizes.isEmpty()) {
+            final int groupSize = sizes.get(0);
+            final int minimalGroupSize = groupSize - deviation;
+
+            for (int d = 0; d < deviation && extraGroupSize < minimalGroupSize; d++) {
+                int g = sizes.size();
+
+                while (g > 0 && extraGroupSize < minimalGroupSize) {
+                    g--;
+                    sizes.set(g, sizes.get(g) - 1);
+                    extraGroupSize++;
+                }
+            }
+        }
+
+        sizes.add(extraGroupSize);
+
+        return sizes;
+    }
+
+    /** spreads the overflow over different groups. */
+    private final List<Integer> spreadOverflowOverGroups(
+            final int deviation, 
+            final int overflow, 
+            final ArrayList<Integer> sizes
+    ) {
+
+        int toSpread = overflow;
+        for (int d = 0; d < deviation && toSpread > 0; d++) {
+            for (int g = 0; g < sizes.size() && toSpread > 0; g++) {
+                sizes.set(g, sizes.get(g) + 1);
+                toSpread--;
+            }
+        }
+
+        return sizes;
+    }
+}
