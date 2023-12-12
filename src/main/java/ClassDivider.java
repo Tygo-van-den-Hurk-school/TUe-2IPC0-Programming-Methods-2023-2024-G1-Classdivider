@@ -1,8 +1,5 @@
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -11,7 +8,7 @@ import java.util.Set;
  *
  * @author Huub de Beer
  */
-public class ClassDivider {
+public abstract class ClassDivider {
 
     /**
      * Determine if {@code klas} is dividable into groups of size {@code groupSize} +/-
@@ -98,41 +95,11 @@ public class ClassDivider {
      * 
      * @throws IllegalArgumentException when {@code !isDividable(klas, groupSize, deviation)}
      */
-    public Set<Group<Student>> divide(
+    public abstract Set<Group<Student>> divide(
         final Group<Student> klas, 
         final int groupSize, 
         final int deviation
-    ) throws IllegalArgumentException {
-
-        /* Checking pre conditions */ {
-            if (! this.isDividable(klas, groupSize, deviation)) {
-                throw new IllegalArgumentException(
-                    this.getClass().getSimpleName() + ".divide(Group<Student>, int, int).pre "
-                    + "violated, "
-                    + "klas (of size " + klas.size() + ") was not dividable into groups of size "
-                    + "groupSize (" + groupSize + ") +/- deviation (" + deviation + ")."
-                );
-            }
-        }
-
-        final Set<Group<Student>> groupSet = (new HashSet<>());
-        final Iterator<Student> students = (klas.iterator());
-        final List<Integer> groupSizes = (this.determineGroupsAndSizes(
-            klas, groupSize, deviation
-        ));
-
-        for (int size : groupSizes) {
-            final Group<Student> group = new Group<>();
-
-            for (int s = 0; s < size; s++) {
-                group.add(students.next());
-            }
-
-            groupSet.add(group);
-        }
-
-        return groupSet;
-    }
+    ) throws IllegalArgumentException;
 
     /**
      * Determine the number of groups and their sizes when dividing {@code klas} into groups of

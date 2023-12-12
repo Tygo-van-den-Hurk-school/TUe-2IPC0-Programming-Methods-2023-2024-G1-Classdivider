@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Huub de Beer
  */
-public class ClassDividerTest {
+public abstract class ClassDividerTest {
     
     /** the instance of {@code ClassDivider} to test. */
     protected ClassDivider cd;
@@ -21,7 +21,6 @@ public class ClassDividerTest {
      * Constructs a new {@code ClassDividerTest}.
      */
     public ClassDividerTest() {
-        this.cd = new ClassDivider();
 
         /* Generating the class for for all sizes */ { // speeds up the caching.
             final Group<Student> klas = this.createClass(ClassDividerTest.MAX_KLAS_SIZE_TO_TEST);
@@ -59,9 +58,7 @@ public class ClassDividerTest {
                         //
                         final int actualValue = (ClassDividerTest.RANDOM.nextInt(maximumValue));
                         final Boolean testCaseWillBeAdded = (actualValue >= minimalValue);
-                        final Boolean testCaseIsDividable = (this.cd.isDividable(
-                            this.createClass(classSize), groupSize, deviation));
-                        if (testCaseWillBeAdded && testCaseIsDividable) {
+                        if (testCaseWillBeAdded) {
                             this.divideTestCases.add(
                                 new DivideTestCase(classSize, groupSize, deviation)
                             );
@@ -275,8 +272,13 @@ public class ClassDividerTest {
         assertEquals(amountOfGroups, groupSet.size());
     }
     
+    /** 
+     * A testcase for {@link ClassDivider#divide(Group, int, int)} that stores 
+     * the parameters that need to be provided. 
+     */
     record DivideTestCase(int classSize, int groupSize, int deviation) {}
     
+    /** Contains test cases for {@code divide}. */
     List<DivideTestCase> divideTestCases = new ArrayList<>();
     
     /**
@@ -286,10 +288,14 @@ public class ClassDividerTest {
     @Test
     public void testDivideStudentsInExactlyOneGroup() {
         
-        for (DivideTestCase divideTestCase : divideTestCases) {
+        for (DivideTestCase divideTestCase : this.divideTestCases) {
             
             final Group<Student> klas = this.createClass(divideTestCase.classSize);
             
+            if (!this.cd.isDividable(klas, divideTestCase.groupSize, divideTestCase.deviation)) {
+                continue;
+            }
+
             assertStudentsInExactlyOneGroup(
                 klas, 
                 this.cd.divide(klas, divideTestCase.groupSize(), divideTestCase.deviation())
@@ -304,10 +310,14 @@ public class ClassDividerTest {
     @Test
     public void testDivideAllGroupsHaveAValidSize() {
         
-        for (DivideTestCase divideTestCase : divideTestCases) {
+        for (DivideTestCase divideTestCase : this.divideTestCases) {
             
             final Group<Student> klas = this.createClass(divideTestCase.classSize);
             
+            if (!this.cd.isDividable(klas, divideTestCase.groupSize, divideTestCase.deviation)) {
+                continue;
+            }
+
             assertAllGroupsHaveValidSize(
                     this.cd.divide(klas, divideTestCase.groupSize(), divideTestCase.deviation()), 
                     divideTestCase.groupSize(),
@@ -323,10 +333,14 @@ public class ClassDividerTest {
     @Test
     public void testDivideNumberOfStudentsEqual() {
         
-        for (DivideTestCase divideTestCase : divideTestCases) {
+        for (DivideTestCase divideTestCase : this.divideTestCases) {
             
             final Group<Student> klas = this.createClass(divideTestCase.classSize);
-            
+        
+            if (!this.cd.isDividable(klas, divideTestCase.groupSize, divideTestCase.deviation)) {
+                continue;
+            }
+
             assertGroupSetStudentsNumberIsClassSize(
                     klas, 
                     this.cd.divide(klas, divideTestCase.groupSize(), divideTestCase.deviation())
@@ -340,11 +354,15 @@ public class ClassDividerTest {
     @Test
     public void testDivideDoesNotChangeClass() {
         
-        for (DivideTestCase divideTestCase : divideTestCases) {
+        for (DivideTestCase divideTestCase : this.divideTestCases) {
             
             final Group<Student> klas = this.createClass(divideTestCase.classSize);
             final Group<Student> copy = copyClass(klas);            
             
+            if (!this.cd.isDividable(klas, divideTestCase.groupSize, divideTestCase.deviation)) {
+                continue;
+            }
+
             this.cd.divide(klas, divideTestCase.groupSize(), divideTestCase.deviation());
             
             assertTrue(klas.containsAll(copy));
