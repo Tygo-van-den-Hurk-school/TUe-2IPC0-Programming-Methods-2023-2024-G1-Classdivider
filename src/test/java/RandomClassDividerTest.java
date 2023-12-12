@@ -11,6 +11,7 @@ public class RandomClassDividerTest extends ClassDividerTest {
      * Creates a new {@code RandomClassDividerTest} instance.
      */
     public RandomClassDividerTest() {
+        super();
         this.cd = new RandomClassDivider();
     }
 }

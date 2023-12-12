@@ -111,6 +111,7 @@ public class ClassDividerCLI implements Callable<Integer> {
     ) {
 
         return switch (strategy) {
+            case LastName -> new NameRangePrinter();
             default -> new FirstNamePrinter(klas);
         };
     }
@@ -125,7 +126,7 @@ public class ClassDividerCLI implements Callable<Integer> {
         this.validateGroupSizeAndDeviation();
         
         final Group<Student> klas = validateStudentsFile();
-        final ClassDivider divider = new ClassDivider();
+        final ClassDivider divider = ClassDivisionStrategy.create(this.strategy);
         
         /* Check if the pre condition of the program is violated */ {
             if (! divider.isDividable(klas, groupSize, deviation)) {

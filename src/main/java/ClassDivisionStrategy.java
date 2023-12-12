@@ -6,7 +6,9 @@
 public enum ClassDivisionStrategy {
     
     /** Divide a class randomly.*/
-    Random("Random");
+    Random("Random"), 
+    /** Divide a class based on lastName. */
+    LastName("Lastname");
 
     /** Stores the key used for the enum. */
     private final String key;
@@ -54,6 +56,7 @@ public enum ClassDivisionStrategy {
      */
     public static ClassDivider create(final ClassDivisionStrategy strategy) {
         return switch (strategy) {
+            case LastName -> new LastNameClassDivider();
             case Random -> new RandomClassDivider();
             default -> new RandomClassDivider();
         };
